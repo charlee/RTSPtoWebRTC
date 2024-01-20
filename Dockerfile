@@ -1,14 +1,11 @@
-FROM golang:1.18
+FROM golang:1.20.5-alpine3.18 AS builder
 
-WORKDIR /go/src/app
-COPY .  .
+WORKDIR /go/src/
+COPY . /go/src
+RUN CGO_ENABLED=0 GOOS=linux go build -o /go/bin/RTSPtoWebRTC .
 
-RUN go get -d -v ./...
-RUN go install -v ./...
-
+FROM scratch
+COPY --from=builder /go/bin/RTSPtoWebRTC /RTSPtoWebRTC
 EXPOSE 8083
 
-ENV GO111MODULE=on
-ENV GIN_MODE=release
-
-CMD go run *.go
+ENTRYPOINT ["/RTSPtoWebRTC"]
